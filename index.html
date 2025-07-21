@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ ARMORY INSPECTOR | Interactive Equipment Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --highlight: rgba(255, 215, 0, 0.2);
+            --glow-color: rgba(255, 215, 0, 0.7);
+            --glow-intense: rgba(255, 215, 0, 0.9);
+            --transition-speed: 0.3s;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'MedievalSharp', cursive;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 20%),
+                url('https://www.transparenttextures.com/patterns/black-paper.png');
+        }
+        
+        #app {
+            position: relative;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--silver);
+        }
+        
+        .container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+            max-width: 90%;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.7));
+        }
+        
+        #character-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.3));
+            transition: transform 0.3s ease;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .hover-image {
+            position: fixed;
+            display: none;
+            border: 3px solid var(--gold);
+            border-radius: 10px;
+            box-shadow: 0 0 25px var(--glow-intense);
+            z-index: 100;
+            pointer-events: none;
+            background: rgba(10, 10, 10, 0.95);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            max-width: 80vw;
+            max-height: 80vh;
+            width: auto;
+            height: auto;
+            opacity: 0;
+            transition: all var(--transition-speed) ease;
+            padding: 15px;
+            /* Removed the float animation */
+        }
+        
+        .hover-image.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .hover-image::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        area {
+            cursor: pointer;
+            outline: none;
+        }
+        
+        /* Highlight area for hover effects */
+        .highlight-area {
+            position: absolute;
+            background: var(--highlight);
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+        
+        .highlight-area.rect {
+            border-radius: 5px;
+        }
+        
+        .highlight-area.hidden {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        
+        .highlight-area.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Character stats panel */
+        .character-stats {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 15px;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            max-width: 80%;
+            z-index: 60;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+        }
+        
+        .character-stats.show {
+            display: flex;
+        }
+        
+        .stat-card {
+            background: rgba(30, 30, 30, 0.7);
+            border: 1px solid var(--silver);
+            border-radius: 5px;
+            padding: 10px;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            color: var(--gold);
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .stat-name {
+            font-size: 0.9rem;
+            color: var(--silver);
+        }
+        
+        /* Background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        /* Audio toggle */
+        .audio-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid gold;
+            color: gold;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .audio-toggle:hover {
+            background: rgba(255, 215, 0, 0.2);
+            transform: scale(1.1);
+        }
+        
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 50;
+        }
+        
+        .control-btn {
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid var(--gold);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .control-btn:hover {
+            background: var(--gold);
+            color: black;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Birthday card */
+        .birthday-card {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 50;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .birthday-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--glow-intense);
+        }
+        
+        .birthday-text {
+            font-size: 1.2rem;
+            color: var(--gold);
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .birthday-hover {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--gold);
+            border-radius: 5px;
+            padding: 5px 10px;
+            color: white;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .birthday-card:hover .birthday-hover {
+            opacity: 1;
+        }
+        
+        /* Animations */
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px var(--gold), 0 0 10px var(--gold);
+            }
+            to {
+                text-shadow: 0 0 10px var(--gold), 0 0 20px var(--gold), 0 0 30px #ff8c00;
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+                bottom: 10px;
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .character-stats {
+                bottom: 100px;
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="bg-particles" id="particles"></div>
+        
+        <div class="header">
+            <h1>⚔️ ARMORY INSPECTOR</h1>
+            <p class="subtitle">Hover over equipment slots to see details. By Sienna For Sienna</p>
+        </div>
+        
+        <!-- Birthday card -->
+        <div class="birthday-card">
+            <div class="birthday-text">Dusk Gear Check</div>
+            <div class="birthday-hover">SiennaParsons</div>
+        </div>
+        
+        <div class="container">
+            <!-- Main character image -->
+            <img id="character-image" src="image.png" usemap="#equipment-map" alt="Character Equipment">
+            
+            <!-- Highlight element -->
+            <div id="highlight-area" class="highlight-area hidden"></div>
+            
+            <!-- Hidden hover images -->
+            <img id="weapon1-hover" class="hover-image" src="images/weapon1-detail.png" alt="Weapon 1 Details">
+            <img id="weapon2-hover" class="hover-image" src="images/weapon2-detail.png" alt="Weapon 2 Details">
+            <img id="head-hover" class="hover-image" src="images/head-detail.png" alt="Head Details">
+            <img id="cap-hover" class="hover-image" src="images/cap-detail.png" alt="Cap Details">
+            <img id="chest-hover" class="hover-image" src="images/chest-detail.png" alt="Chest Details">
+            <img id="gloves-hover" class="hover-image" src="images/gloves-detail.png" alt="Gloves Details">
+            <img id="pants-hover" class="hover-image" src="images/pants-detail.png" alt="Pants Details">
+            <img id="boots-hover" class="hover-image" src="images/boots-detail.png" alt="Boots Details">
+            <img id="necklace-hover" class="hover-image" src="images/necklace-detail.png" alt="Necklace Details">
+            <img id="braclet-hover" class="hover-image" src="images/braclet-detail.png" alt="Braclet Details">
+            <img id="ring1-hover" class="hover-image" src="images/ring1-detail.png" alt="Ring 1 Details">
+            <img id="ring2-hover" class="hover-image" src="images/ring2-detail.png" alt="Ring 2 Details">
+            <img id="belt-hover" class="hover-image" src="images/belt-detail.png" alt="Belt Details">
+            <img id="stats-hover" class="hover-image" src="images/stats-detail.png" alt="Stats Details">
+            <img id="skills-hover" class="hover-image" src="images/skills-detail.png" alt="Skills Details">
+            <img id="earings-hover" class="hover-image" src="images/earings-detail.png" alt="Earings Details">
+            <img id="artifacts-hover" class="hover-image" src="images/artifacts-detail.png" alt="Artifacts Details">
+            
+            <!-- Image map -->
+            <map name="equipment-map" id="equipment-map">
+                <!-- Areas will be generated dynamically by JavaScript -->
+            </map>
+        </div>
+        
+        <!-- Character stats panel -->
+        <div class="character-stats" id="characterStats">
+            <div class="stat-card">
+                <div class="stat-name">Strength</div>
+                <div class="stat-value">60</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Dexterity</div>
+                <div class="stat-value">80</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Wisdom</div>
+                <div class="stat-value">73</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Perception</div>
+                <div class="stat-value">70</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Fortitude</div>
+                <div class="stat-value">11</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Haste</div>
+                <div class="stat-value">36.9%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Critical Strike</div>
+                <div class="stat-value">2891</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-name">Mastery</div>
+                <div class="stat-value">899</div>
+            </div>
+        </div>
+        
+        <!-- Audio toggle -->
+        <button class="audio-toggle" id="audioToggle" title="Toggle sound effects">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            </svg>
+        </button>
+        
+        <!-- Control buttons -->
+        <div class="controls">
+            <button class="control-btn" onclick="showStats()">📊 Character Stats</button>
+        </div>
+    </div>
+    
+    <!-- Audio elements -->
+    <audio id="hoverSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" preload="auto"></audio>
+    <audio id="equipSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
+    <audio id="bgMusic" loop src="https://assets.mixkit.co/music/preview/mixkit-epic-adventure-ai-2857.mp3" preload="auto"></audio>
+    
+    <script>
+        // Global variables
+        let isMusicPlaying = false;
+        let audioEnabled = true;
+        let originalImageWidth = 0;
+        let originalImageHeight = 0;
+        
+        // Define the original coordinates (based on your original image dimensions)
+        const areaDefinitions = [
+            { id: 'weapon1', shape: 'circle', coords: [835,302,138], hoverId: 'weapon1-hover' },
+            { id: 'weapon2', shape: 'circle', coords: [570,506,83], hoverId: 'weapon2-hover' },
+            { id: 'head', shape: 'circle', coords: [1675,174,50], hoverId: 'head-hover' },
+            { id: 'cap', shape: 'circle', coords: [1822,178,49], hoverId: 'cap-hover' },
+            { id: 'chest', shape: 'circle', coords: [1674,316,49], hoverId: 'chest-hover' },
+            { id: 'gloves', shape: 'circle', coords: [1820,315,54], hoverId: 'gloves-hover' },
+            { id: 'pants', shape: 'circle', coords: [1675,455,54], hoverId: 'pants-hover' },
+            { id: 'boots', shape: 'circle', coords: [1819,451,54], hoverId: 'boots-hover' },
+            { id: 'necklace', shape: 'circle', coords: [1675,593,47], hoverId: 'necklace-hover' },
+            { id: 'braclet', shape: 'circle', coords: [1821,590,49], hoverId: 'braclet-hover' },
+            { id: 'ring1', shape: 'circle', coords: [1675,731,50], hoverId: 'ring1-hover' },
+            { id: 'ring2', shape: 'circle', coords: [1822,733,47], hoverId: 'ring2-hover' },
+            { id: 'belt', shape: 'circle', coords: [1822,869,49], hoverId: 'belt-hover' },
+            { id: 'stats', shape: 'rect', coords: [982,1026,470,1237], hoverId: 'stats-hover' },
+            { id: 'skills', shape: 'rect', coords: [460,681,366,777], hoverId: 'skills-hover' },
+            { id: 'earings', shape: 'circle', coords: [1678,873,54], hoverId: 'earings-hover' },
+            { id: 'artifacts', shape: 'rect', coords: [1493,1061,1054,1203], hoverId: 'artifacts-hover' }
+        ];
+        
+        // Enhanced hover functions
+        function showHover(id, coords, shape) {
+            const hoverImg = document.getElementById(id);
+            hoverImg.style.display = 'block';
+            setTimeout(() => {
+                hoverImg.classList.add('active');
+            }, 10);
+            
+            // Show highlight
+            const highlight = document.getElementById('highlight-area');
+            highlight.className = `highlight-area visible ${shape}`;
+            
+            // Position and size the highlight
+            if (shape === 'circle') {
+                const [x, y, r] = coords;
+                highlight.style.width = `${r * 2}px`;
+                highlight.style.height = `${r * 2}px`;
+                highlight.style.left = `${x - r}px`;
+                highlight.style.top = `${y - r}px`;
+            } else if (shape === 'rect') {
+                const [x1, y1, x2, y2] = coords;
+                highlight.style.width = `${Math.abs(x2 - x1)}px`;
+                highlight.style.height = `${Math.abs(y2 - y1)}px`;
+                highlight.style.left = `${Math.min(x1, x2)}px`;
+                highlight.style.top = `${Math.min(y1, y2)}px`;
+            }
+            
+            // Play sound if enabled
+            if (audioEnabled) {
+                document.getElementById('hoverSound').currentTime = 0;
+                document.getElementById('hoverSound').play().catch(e => console.log("Audio play failed:", e));
+            }
+        }
+        
+        function hideHover(id) {
+            const hoverImg = document.getElementById(id);
+            hoverImg.classList.remove('active');
+            setTimeout(() => {
+                hoverImg.style.display = 'none';
+            }, 300);
+            
+            // Hide highlight
+            document.getElementById('highlight-area').className = 'highlight-area hidden';
+        }
+        
+        // Create background particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size and position
+                const size = Math.random() * 5 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Animation
+                const duration = Math.random() * 20 + 10;
+                particle.style.animation = `float ${duration}s linear infinite`;
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Show character stats
+        function showStats() {
+            if (audioEnabled) {
+                document.getElementById('clickSound').currentTime = 0;
+                document.getElementById('clickSound').play();
+            }
+            
+            const statsPanel = document.getElementById('characterStats');
+            statsPanel.classList.toggle('show');
+        }
+        
+        // Toggle audio
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const audioToggle = document.getElementById('audioToggle');
+            const bgMusic = document.getElementById('bgMusic');
+            bgMusic.volume = 0.3;
+            
+            if (audioEnabled) {
+                audioToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path></svg>';
+                bgMusic.play().catch(e => console.log('Autoplay prevented'));
+            } else {
+                audioToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path></svg>';
+                bgMusic.pause();
+            }
+        }
+        
+        // Handle keyboard shortcuts
+        function handleKeyPress(e) {
+            // S key toggles stats
+            if (e.key.toLowerCase() === 's') {
+                showStats();
+            }
+            // M key toggles audio
+            else if (e.key.toLowerCase() === 'm') {
+                toggleAudio();
+            }
+            // Escape closes all panels
+            else if (e.key === 'Escape') {
+                document.getElementById('characterStats').classList.remove('show');
+                document.querySelectorAll('.hover-image').forEach(el => {
+                    el.classList.remove('active');
+                    el.style.display = 'none';
+                });
+                document.getElementById('highlight-area').className = 'highlight-area hidden';
+            }
+        }
+        
+        // Calculate scaled coordinates based on current image size
+        function getScaledCoords(originalCoords, currentWidth, currentHeight) {
+            const widthRatio = currentWidth / originalImageWidth;
+            const heightRatio = currentHeight / originalImageHeight;
+            
+            return originalCoords.map((coord, index) => {
+                // For circles, scale x, y, and radius
+                if (originalCoords.length === 3 && index < 2) {
+                    return Math.round(coord * (index === 0 ? widthRatio : heightRatio));
+                }
+                // For circles, radius should be scaled by the average ratio
+                else if (originalCoords.length === 3 && index === 2) {
+                    return Math.round(coord * ((widthRatio + heightRatio) / 2));
+                }
+                // For rectangles, scale all coordinates
+                else {
+                    return Math.round(coord * (index % 2 === 0 ? widthRatio : heightRatio));
+                }
+            });
+        }
+        
+        // Update image map areas when window resizes
+        function updateImageMap() {
+            const characterImage = document.getElementById('character-image');
+            const map = document.getElementById('equipment-map');
+            
+            // Clear existing areas
+            map.innerHTML = '';
+            
+            // Get current image dimensions
+            const currentWidth = characterImage.clientWidth;
+            const currentHeight = characterImage.clientHeight;
+            
+            // Create new areas with scaled coordinates
+            areaDefinitions.forEach(areaDef => {
+                const area = document.createElement('area');
+                area.alt = areaDef.id;
+                area.title = areaDef.id;
+                area.shape = areaDef.shape;
+                
+                // Scale the coordinates
+                const scaledCoords = getScaledCoords(areaDef.coords, currentWidth, currentHeight);
+                area.coords = scaledCoords.join(',');
+                
+                // Set event handlers
+                area.onmouseover = () => showHover(areaDef.hoverId, scaledCoords, areaDef.shape);
+                area.onmouseout = () => hideHover(areaDef.hoverId);
+                area.onfocus = () => showHover(areaDef.hoverId, scaledCoords, areaDef.shape);
+                area.onblur = () => hideHover(areaDef.hoverId);
+                
+                map.appendChild(area);
+            });
+        }
+        
+        // Initialize the app
+        function init() {
+            createParticles();
+            preloadImages();
+            
+            // Get original image dimensions once it's loaded
+            const characterImage = document.getElementById('character-image');
+            characterImage.onload = function() {
+                originalImageWidth = this.naturalWidth;
+                originalImageHeight = this.naturalHeight;
+                
+                // Create initial image map
+                updateImageMap();
+                
+                // Update on window resize
+                window.addEventListener('resize', updateImageMap);
+            };
+            
+            // Set a fallback in case the image is already loaded
+            if (characterImage.complete) {
+                characterImage.onload();
+            }
+            
+            // Try to autoplay background music (may be blocked by browser)
+            const bgMusic = document.getElementById('bgMusic');
+            bgMusic.volume = 0.3;
+            const playPromise = bgMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    isMusicPlaying = true;
+                }).catch(error => {
+                    isMusicPlaying = false;
+                });
+            }
+            
+            // Set up event listeners
+            document.addEventListener('keydown', handleKeyPress);
+        }
+        
+        // Preload all hover images
+        function preloadImages() {
+            document.querySelectorAll('.hover-image').forEach(img => {
+                new Image().src = img.src;
+            });
+        }
+        
+        // Set up event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+        document.getElementById('audioToggle').addEventListener('click', toggleAudio);
+    </script>
+</body>
+</html>
