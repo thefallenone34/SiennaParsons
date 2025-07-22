@@ -106,7 +106,6 @@
             opacity: 0;
             transition: all var(--transition-speed) ease;
             padding: 15px;
-            /* Removed the float animation */
         }
         
         .hover-image.active {
@@ -132,7 +131,6 @@
             outline: none;
         }
         
-        /* Highlight area for hover effects */
         .highlight-area {
             position: absolute;
             background: var(--highlight);
@@ -158,51 +156,6 @@
             transform: scale(1);
         }
         
-        /* Character stats panel */
-        .character-stats {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid var(--gold);
-            border-radius: 10px;
-            padding: 15px;
-            display: none;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            max-width: 80%;
-            z-index: 60;
-            box-shadow: 0 0 20px rgba(0,0,0,0.7);
-        }
-        
-        .character-stats.show {
-            display: flex;
-        }
-        
-        .stat-card {
-            background: rgba(30, 30, 30, 0.7);
-            border: 1px solid var(--silver);
-            border-radius: 5px;
-            padding: 10px;
-            min-width: 120px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.2rem;
-            color: var(--gold);
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        
-        .stat-name {
-            font-size: 0.9rem;
-            color: var(--silver);
-        }
-        
-        /* Background particles */
         .bg-particles {
             position: fixed;
             top: 0;
@@ -220,7 +173,6 @@
             pointer-events: none;
         }
         
-        /* Audio toggle */
         .audio-toggle {
             position: fixed;
             bottom: 20px;
@@ -244,7 +196,6 @@
             transform: scale(1.1);
         }
         
-        /* Controls */
         .controls {
             position: fixed;
             bottom: 20px;
@@ -280,7 +231,6 @@
             transform: translateY(0);
         }
         
-        /* Birthday card */
         .birthday-card {
             position: fixed;
             top: 20px;
@@ -325,8 +275,59 @@
         .birthday-card:hover .birthday-hover {
             opacity: 1;
         }
+
+        .set-selector {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 50;
+        }
+
+        .set-btn {
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid var(--gold);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .set-btn:hover {
+            background: var(--gold);
+            color: black;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .set-btn.active {
+            background: var(--gold);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--glow-intense);
+        }
+
+        .set-btn .set-name {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .set-btn .set-desc {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--silver);
+        }
         
-        /* Animations */
         @keyframes glow {
             from {
                 text-shadow: 0 0 5px var(--gold), 0 0 10px var(--gold);
@@ -336,7 +337,6 @@
             }
         }
         
-        /* Responsive adjustments */
         @media (max-width: 768px) {
             .container {
                 max-width: 95%;
@@ -360,10 +360,27 @@
             .subtitle {
                 font-size: 1rem;
             }
-            
-            .character-stats {
-                bottom: 100px;
-                max-width: 95%;
+
+            .set-selector {
+                position: static;
+                transform: none;
+                flex-direction: row;
+                justify-content: center;
+                margin-bottom: 20px;
+                gap: 10px;
+            }
+
+            .set-btn {
+                padding: 8px 12px;
+                min-width: auto;
+            }
+
+            .set-btn .set-name {
+                font-size: 1rem;
+            }
+
+            .set-btn .set-desc {
+                display: none;
             }
         }
     </style>
@@ -377,107 +394,71 @@
             <p class="subtitle">Hover over equipment slots to see details. By Sienna For Sienna</p>
         </div>
         
-        <!-- Birthday card -->
         <div class="birthday-card">
             <div class="birthday-text">Dusk Gear Check</div>
             <div class="birthday-hover">SiennaParsons</div>
         </div>
+
+        <div class="set-selector">
+            <button class="set-btn active" id="critSetBtn" onclick="changeSet('crit')">
+                <span class="set-name">Crit Set</span>
+                <span class="set-desc">Max Critical Damage</span>
+            </button>
+            <button class="set-btn" id="critAndHitSetBtn" onclick="changeSet('crit-and-hit')">
+                <span class="set-name">Crit and Hit Set</span>
+                <span class="set-desc">Balanced Stats</span>
+            </button>
+            <button class="set-btn" id="pveSetBtn" onclick="changeSet('pve')">
+                <span class="set-name">PvE Set</span>
+                <span class="set-desc">Optimized for PvE</span>
+            </button>
+        </div>
         
         <div class="container">
-            <!-- Main character image -->
             <img id="character-image" src="image.png" usemap="#equipment-map" alt="Character Equipment">
             
-            <!-- Highlight element -->
             <div id="highlight-area" class="highlight-area hidden"></div>
             
-            <!-- Hidden hover images -->
-            <img id="weapon1-hover" class="hover-image" src="images/weapon1-detail.png" alt="Weapon 1 Details">
-            <img id="weapon2-hover" class="hover-image" src="images/weapon2-detail.png" alt="Weapon 2 Details">
-            <img id="head-hover" class="hover-image" src="images/head-detail.png" alt="Head Details">
-            <img id="cap-hover" class="hover-image" src="images/cap-detail.png" alt="Cap Details">
-            <img id="chest-hover" class="hover-image" src="images/chest-detail.png" alt="Chest Details">
-            <img id="gloves-hover" class="hover-image" src="images/gloves-detail.png" alt="Gloves Details">
-            <img id="pants-hover" class="hover-image" src="images/pants-detail.png" alt="Pants Details">
-            <img id="boots-hover" class="hover-image" src="images/boots-detail.png" alt="Boots Details">
-            <img id="necklace-hover" class="hover-image" src="images/necklace-detail.png" alt="Necklace Details">
-            <img id="braclet-hover" class="hover-image" src="images/braclet-detail.png" alt="Braclet Details">
-            <img id="ring1-hover" class="hover-image" src="images/ring1-detail.png" alt="Ring 1 Details">
-            <img id="ring2-hover" class="hover-image" src="images/ring2-detail.png" alt="Ring 2 Details">
-            <img id="belt-hover" class="hover-image" src="images/belt-detail.png" alt="Belt Details">
-            <img id="stats-hover" class="hover-image" src="images/stats-detail.png" alt="Stats Details">
-            <img id="skills-hover" class="hover-image" src="images/skills-detail.png" alt="Skills Details">
-            <img id="earings-hover" class="hover-image" src="images/earings-detail.png" alt="Earings Details">
-            <img id="artifacts-hover" class="hover-image" src="images/artifacts-detail.png" alt="Artifacts Details">
+            <img id="weapon1-hover" class="hover-image" alt="Weapon 1 Details">
+            <img id="weapon2-hover" class="hover-image" alt="Weapon 2 Details">
+            <img id="head-hover" class="hover-image" alt="Head Details">
+            <img id="cap-hover" class="hover-image" alt="Cap Details">
+            <img id="chest-hover" class="hover-image" alt="Chest Details">
+            <img id="gloves-hover" class="hover-image" alt="Gloves Details">
+            <img id="pants-hover" class="hover-image" alt="Pants Details">
+            <img id="boots-hover" class="hover-image" alt="Boots Details">
+            <img id="necklace-hover" class="hover-image" alt="Necklace Details">
+            <img id="braclet-hover" class="hover-image" alt="Braclet Details">
+            <img id="ring1-hover" class="hover-image" alt="Ring 1 Details">
+            <img id="ring2-hover" class="hover-image" alt="Ring 2 Details">
+            <img id="belt-hover" class="hover-image" alt="Belt Details">
+            <img id="stats-hover" class="hover-image" alt="Stats Details">
+            <img id="skills-hover" class="hover-image" alt="Skills Details">
+            <img id="earings-hover" class="hover-image" alt="Earings Details">
+            <img id="artifacts-hover" class="hover-image" alt="Artifacts Details">
             
-            <!-- Image map -->
-            <map name="equipment-map" id="equipment-map">
-                <!-- Areas will be generated dynamically by JavaScript -->
-            </map>
+            <map name="equipment-map" id="equipment-map"></map>
         </div>
         
-        <!-- Character stats panel -->
-        <div class="character-stats" id="characterStats">
-            <div class="stat-card">
-                <div class="stat-name">Strength</div>
-                <div class="stat-value">60</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Dexterity</div>
-                <div class="stat-value">80</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Wisdom</div>
-                <div class="stat-value">73</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Perception</div>
-                <div class="stat-value">70</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Fortitude</div>
-                <div class="stat-value">11</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Haste</div>
-                <div class="stat-value">36.9%</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Critical Strike</div>
-                <div class="stat-value">2891</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-name">Mastery</div>
-                <div class="stat-value">899</div>
-            </div>
-        </div>
-        
-        <!-- Audio toggle -->
         <button class="audio-toggle" id="audioToggle" title="Toggle sound effects">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
             </svg>
         </button>
-        
-        <!-- Control buttons -->
-        <div class="controls">
-            <button class="control-btn" onclick="showStats()">📊 Character Stats</button>
-        </div>
     </div>
     
-    <!-- Audio elements -->
     <audio id="hoverSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3" preload="auto"></audio>
     <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" preload="auto"></audio>
     <audio id="equipSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
     <audio id="bgMusic" loop src="https://assets.mixkit.co/music/preview/mixkit-epic-adventure-ai-2857.mp3" preload="auto"></audio>
     
     <script>
-        // Global variables
         let isMusicPlaying = false;
         let audioEnabled = true;
         let originalImageWidth = 0;
         let originalImageHeight = 0;
-        
-        // Define the original coordinates (based on your original image dimensions)
+        let currentSet = 'crit';
+
         const areaDefinitions = [
             { id: 'weapon1', shape: 'circle', coords: [835,302,138], hoverId: 'weapon1-hover' },
             { id: 'weapon2', shape: 'circle', coords: [570,506,83], hoverId: 'weapon2-hover' },
@@ -498,19 +479,31 @@
             { id: 'artifacts', shape: 'rect', coords: [1493,1061,1054,1203], hoverId: 'artifacts-hover' }
         ];
         
-        // Enhanced hover functions
+        // Utility function to load images with fallback
+        function loadImageWithFallback(element, src, fallbackSrc) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    element.src = src;
+                    resolve(true);
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load ${src}, using fallback`);
+                    element.src = fallbackSrc;
+                    resolve(false);
+                };
+                img.src = src;
+            });
+        }
+        
         function showHover(id, coords, shape) {
             const hoverImg = document.getElementById(id);
             hoverImg.style.display = 'block';
-            setTimeout(() => {
-                hoverImg.classList.add('active');
-            }, 10);
+            setTimeout(() => hoverImg.classList.add('active'), 10);
             
-            // Show highlight
             const highlight = document.getElementById('highlight-area');
             highlight.className = `highlight-area visible ${shape}`;
             
-            // Position and size the highlight
             if (shape === 'circle') {
                 const [x, y, r] = coords;
                 highlight.style.width = `${r * 2}px`;
@@ -525,61 +518,36 @@
                 highlight.style.top = `${Math.min(y1, y2)}px`;
             }
             
-            // Play sound if enabled
             if (audioEnabled) {
                 document.getElementById('hoverSound').currentTime = 0;
-                document.getElementById('hoverSound').play().catch(e => console.log("Audio play failed:", e));
+                document.getElementById('hoverSound').play().catch(e => console.log("Audio error: " + e));
             }
         }
         
         function hideHover(id) {
             const hoverImg = document.getElementById(id);
             hoverImg.classList.remove('active');
-            setTimeout(() => {
-                hoverImg.style.display = 'none';
-            }, 300);
-            
-            // Hide highlight
+            setTimeout(() => hoverImg.style.display = 'none', 300);
             document.getElementById('highlight-area').className = 'highlight-area hidden';
         }
         
-        // Create background particles
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            const particleCount = 30;
-            
-            for (let i = 0; i < particleCount; i++) {
+            for (let i = 0; i < 30; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                
-                // Random size and position
                 const size = Math.random() * 5 + 1;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.left = `${Math.random() * 100}%`;
                 particle.style.top = `${Math.random() * 100}%`;
-                
-                // Animation
                 const duration = Math.random() * 20 + 10;
                 particle.style.animation = `float ${duration}s linear infinite`;
                 particle.style.animationDelay = `${Math.random() * 10}s`;
-                
                 particlesContainer.appendChild(particle);
             }
         }
         
-        // Show character stats
-        function showStats() {
-            if (audioEnabled) {
-                document.getElementById('clickSound').currentTime = 0;
-                document.getElementById('clickSound').play();
-            }
-            
-            const statsPanel = document.getElementById('characterStats');
-            statsPanel.classList.toggle('show');
-        }
-        
-        // Toggle audio
         function toggleAudio() {
             audioEnabled = !audioEnabled;
             const audioToggle = document.getElementById('audioToggle');
@@ -588,79 +556,111 @@
             
             if (audioEnabled) {
                 audioToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path></svg>';
-                bgMusic.play().catch(e => console.log('Autoplay prevented'));
+                bgMusic.play().catch(e => console.log('Audio prevented: ' + e));
             } else {
                 audioToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path></svg>';
                 bgMusic.pause();
             }
         }
         
-        // Handle keyboard shortcuts
-        function handleKeyPress(e) {
-            // S key toggles stats
-            if (e.key.toLowerCase() === 's') {
-                showStats();
-            }
-            // M key toggles audio
-            else if (e.key.toLowerCase() === 'm') {
-                toggleAudio();
-            }
-            // Escape closes all panels
-            else if (e.key === 'Escape') {
-                document.getElementById('characterStats').classList.remove('show');
-                document.querySelectorAll('.hover-image').forEach(el => {
-                    el.classList.remove('active');
-                    el.style.display = 'none';
-                });
-                document.getElementById('highlight-area').className = 'highlight-area hidden';
+        async function updateHoverImages(setType) {
+            const hoverItems = [
+                'weapon1', 'weapon2', 'head', 'cap', 'chest', 'gloves',
+                'pants', 'boots', 'necklace', 'braclet', 'ring1',
+                'ring2', 'belt', 'stats', 'skills', 'earings', 'artifacts'
+            ];
+            
+            for (const item of hoverItems) {
+                const hoverElement = document.getElementById(`${item}-hover`);
+                const hoverPath = `images/${setType}/${item}-detail.png`;
+                const fallbackPath = `images/crit/${item}-detail.png`;
+                
+                await loadImageWithFallback(
+                    hoverElement,
+                    `${hoverPath}?t=${Date.now()}`,
+                    `${fallbackPath}?t=${Date.now()}`
+                );
             }
         }
         
-        // Calculate scaled coordinates based on current image size
+        async function changeSet(setType) {
+            try {
+                // Clear current image first
+                const characterImage = document.getElementById('character-image');
+                characterImage.src = '';
+                
+                // Set new image with fallback
+                let imagePath, fallbackPath;
+                switch(setType) {
+                    case 'crit':
+                        imagePath = 'image.png';
+                        fallbackPath = 'image.png';
+                        break;
+                    case 'crit-and-hit':
+                        imagePath = 'images/crit-and-hit-set.png';
+                        fallbackPath = 'image.png';
+                        break;
+                    case 'pve':
+                        imagePath = 'images/pve-set.png';
+                        fallbackPath = 'images/pve-set.png';
+                        break;
+                }
+
+                const success = await loadImageWithFallback(
+                    characterImage, 
+                    `${imagePath}?t=${Date.now()}`, 
+                    `${fallbackPath}?t=${Date.now()}`
+                );
+
+                if (!success) {
+                    currentSet = 'crit';
+                    document.querySelectorAll('.set-btn').forEach(btn => btn.classList.remove('active'));
+                    document.getElementById('critSetBtn').classList.add('active');
+                } else {
+                    currentSet = setType;
+                    document.querySelectorAll('.set-btn').forEach(btn => btn.classList.remove('active'));
+                    document.getElementById(`${setType === 'crit-and-hit' ? 'critAndHitSetBtn' : setType + 'SetBtn'}`).classList.add('active');
+                }
+
+                await updateHoverImages(currentSet);
+                updateImageMap();
+                
+            } catch (error) {
+                console.log('Error changing set: ' + error);
+            }
+        }
+        
         function getScaledCoords(originalCoords, currentWidth, currentHeight) {
             const widthRatio = currentWidth / originalImageWidth;
             const heightRatio = currentHeight / originalImageHeight;
             
             return originalCoords.map((coord, index) => {
-                // For circles, scale x, y, and radius
                 if (originalCoords.length === 3 && index < 2) {
                     return Math.round(coord * (index === 0 ? widthRatio : heightRatio));
-                }
-                // For circles, radius should be scaled by the average ratio
-                else if (originalCoords.length === 3 && index === 2) {
+                } else if (originalCoords.length === 3 && index === 2) {
                     return Math.round(coord * ((widthRatio + heightRatio) / 2));
-                }
-                // For rectangles, scale all coordinates
-                else {
+                } else {
                     return Math.round(coord * (index % 2 === 0 ? widthRatio : heightRatio));
                 }
             });
         }
         
-        // Update image map areas when window resizes
         function updateImageMap() {
             const characterImage = document.getElementById('character-image');
             const map = document.getElementById('equipment-map');
-            
-            // Clear existing areas
             map.innerHTML = '';
             
-            // Get current image dimensions
             const currentWidth = characterImage.clientWidth;
             const currentHeight = characterImage.clientHeight;
             
-            // Create new areas with scaled coordinates
             areaDefinitions.forEach(areaDef => {
                 const area = document.createElement('area');
                 area.alt = areaDef.id;
                 area.title = areaDef.id;
                 area.shape = areaDef.shape;
-                
-                // Scale the coordinates
                 const scaledCoords = getScaledCoords(areaDef.coords, currentWidth, currentHeight);
                 area.coords = scaledCoords.join(',');
                 
-                // Set event handlers
                 area.onmouseover = () => showHover(areaDef.hoverId, scaledCoords, areaDef.shape);
                 area.onmouseout = () => hideHover(areaDef.hoverId);
                 area.onfocus = () => showHover(areaDef.hoverId, scaledCoords, areaDef.shape);
@@ -670,54 +670,59 @@
             });
         }
         
-        // Initialize the app
+        function preloadAllImages() {
+            const sets = ['crit', 'crit-and-hit', 'pve'];
+            const items = [
+                'weapon1', 'weapon2', 'head', 'cap', 'chest', 'gloves',
+                'pants', 'boots', 'necklace', 'braclet', 'ring1',
+                'ring2', 'belt', 'stats', 'skills', 'earings', 'artifacts'
+            ];
+            
+            // Preload set images
+            ['crit-and-hit-set.png', 'pve-set.png'].forEach(image => {
+                new Image().src = `images/${image}`;
+            });
+
+            // Preload hover images
+            sets.forEach(set => {
+                items.forEach(item => {
+                    new Image().src = `images/${set}/${item}-detail.png`;
+                });
+            });
+        }
+        
+        function handleKeyPress(e) {
+            if (e.key.toLowerCase() === 'm') toggleAudio();
+            else if (e.key === '1') changeSet('crit');
+            else if (e.key === '2') changeSet('crit-and-hit');
+            else if (e.key === '3') changeSet('pve');
+        }
+        
         function init() {
             createParticles();
-            preloadImages();
             
-            // Get original image dimensions once it's loaded
+            // First load the default image
             const characterImage = document.getElementById('character-image');
             characterImage.onload = function() {
                 originalImageWidth = this.naturalWidth;
                 originalImageHeight = this.naturalHeight;
-                
-                // Create initial image map
                 updateImageMap();
+                updateHoverImages(currentSet);
                 
-                // Update on window resize
-                window.addEventListener('resize', updateImageMap);
+                // Then preload all other images
+                preloadAllImages();
             };
             
-            // Set a fallback in case the image is already loaded
-            if (characterImage.complete) {
-                characterImage.onload();
-            }
+            characterImage.onerror = () => console.log("ERROR loading main image");
+            characterImage.src = 'image.png';
             
-            // Try to autoplay background music (may be blocked by browser)
             const bgMusic = document.getElementById('bgMusic');
             bgMusic.volume = 0.3;
-            const playPromise = bgMusic.play();
+            bgMusic.play().catch(e => console.log('Background music error: ' + e));
             
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    isMusicPlaying = true;
-                }).catch(error => {
-                    isMusicPlaying = false;
-                });
-            }
-            
-            // Set up event listeners
             document.addEventListener('keydown', handleKeyPress);
         }
         
-        // Preload all hover images
-        function preloadImages() {
-            document.querySelectorAll('.hover-image').forEach(img => {
-                new Image().src = img.src;
-            });
-        }
-        
-        // Set up event listeners when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
         document.getElementById('audioToggle').addEventListener('click', toggleAudio);
     </script>
